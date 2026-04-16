@@ -9,8 +9,10 @@
   import OptimizePanel from './lib/components/OptimizePanel.svelte';
   import PortfolioPanel from './lib/components/PortfolioPanel.svelte';
   import DealModal from './lib/components/DealModal.svelte';
+  import UserGuideModal from './lib/components/UserGuideModal.svelte';
 
   let mapView;
+  let showGuide = $state(false);
 
   onMount(async () => {
     try {
@@ -38,6 +40,9 @@
       <ModeSelector />
     </div>
     <FilterBar />
+    <div class="topbar-right">
+      <button class="guide-btn" onclick={() => showGuide = true}>User Guide</button>
+    </div>
   </header>
 
   <main class="main-content" class:panel-open={store.panelOpen && store.mode !== 'portfolio'}>
@@ -84,6 +89,10 @@
   />
 {/if}
 
+{#if showGuide}
+  <UserGuideModal onClose={() => showGuide = false} />
+{/if}
+
 <style>
   .app-layout {
     display: flex;
@@ -98,12 +107,34 @@
     display: flex;
     align-items: center;
     gap: var(--space-6);
-    padding: var(--space-4) var(--space-5) var(--space-3);
-    background: var(--bg-secondary);
+    padding: 0 var(--space-6);
+    background: var(--bg-surface-1);
     border-bottom: 1px solid var(--border-subtle);
     height: var(--topbar-height);
     z-index: 100;
-    flex-shrink: 0;
+  }
+
+  .topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+  }
+
+  .guide-btn {
+    background: transparent;
+    border: 1px solid var(--border-medium);
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+
+  .guide-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--text-primary);
   }
 
   .topbar-left {

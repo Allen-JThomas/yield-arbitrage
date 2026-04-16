@@ -9,7 +9,7 @@
   let ptData = $derived(metro ? metro[pt] : null);
 
   let rentalSeries = $derived(metro ? getYieldSeries(metro, pt, 'rental') : { dates: [], values: [] });
-  let appreciationSeries = $derived(metro ? getYieldSeries(metro, pt, 'appreciation') : { dates: [], values: [] });
+  let appreciationSeries = $derived(metro ? getYieldSeries(metro, pt, 'app') : { dates: [], values: [] });
 
   let hasAppreciation = $derived(ptData?.hasAppreciation ?? false);
   let isMF = $derived(pt === 'mf');
