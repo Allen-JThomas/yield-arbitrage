@@ -1,0 +1,22 @@
+{
+  "name": "yield-arbitrage",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "preprocess": "node scripts/preprocess.js",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "svelte": "^5.55.1",
+    "vite": "^8.0.4"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "leaflet": "^1.9.4",
+    "papaparse": "^5.5.3"
+  }
+}
