@@ -505,22 +505,46 @@
         <!-- Advantage Summary -->
         <div class="advantage-grid">
           <div class="adv-card" class:positive={advRental > 0} class:negative={advRental < 0}>
-            <div class="adv-label">Rental Advantage</div>
+            <div class="adv-label">
+              Rental Advantage
+              <span class="info-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <div class="tooltip">Difference in 5-yr cumulative rental income<br>between Switch and Keep (per $100 invested)</div>
+              </span>
+            </div>
             <div class="adv-value">{advRental >= 0 ? '+' : ''}{advRental.toFixed(2)}</div>
             <div class="adv-unit">per $100 / 5yr</div>
           </div>
           <div class="adv-card" class:positive={advApp > 0} class:negative={advApp < 0}>
-            <div class="adv-label">Appreciation Advantage</div>
+            <div class="adv-label">
+              Appreciation Advantage
+              <span class="info-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <div class="tooltip">Difference in 5-yr cumulative property appreciation<br>between Switch and Keep (per $100 invested)</div>
+              </span>
+            </div>
             <div class="adv-value">{advApp >= 0 ? '+' : ''}{advApp.toFixed(2)}</div>
             <div class="adv-unit">per $100 / 5yr</div>
           </div>
           <div class="adv-card total-adv" style="background: rgba(253, 203, 110, 0.06); border-color: rgba(253, 203, 110, 0.2);">
-            <div class="adv-label">Gross Advantage</div>
+            <div class="adv-label">
+              Gross Advantage
+              <span class="info-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <div class="tooltip">Combined Rental and Appreciation advantages<br>before any maintenance or transaction costs</div>
+              </span>
+            </div>
             <div class="adv-value" style="color: rgba(253, 203, 110, 1);">{advRental + advApp >= 0 ? '+' : ''}{(advRental + advApp).toFixed(2)}</div>
             <div class="adv-unit">per $100 / 5yr</div>
           </div>
           <div class="adv-card total-adv" class:positive={advTotal > 0} class:negative={advTotal < 0}>
-            <div class="adv-label">Total Advantage (Net of Costs)</div>
+            <div class="adv-label">
+              Total Advantage (Net of Costs)
+              <span class="info-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <div class="tooltip">Final advantage after deducting all maintenance<br>and transaction costs for both scenarios</div>
+              </span>
+            </div>
             <div class="adv-value">{advTotal >= 0 ? '+' : ''}{advTotal.toFixed(2)}</div>
             <div class="adv-unit">per $100 / 5yr</div>
             <div class="adv-desc">
@@ -694,4 +718,11 @@
   
   .global-maint-config { display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--text-muted); background: var(--bg-tertiary); padding: 4px 10px; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); }
   .global-maint-config .maint-inp { width: 44px; padding: 2px 4px; font-size: 11px; background: var(--bg-secondary); border: 1px solid var(--border-medium); border-radius: 4px; color: var(--text-primary); text-align: center; }
+
+  /* Info Tooltip */
+  .info-icon { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; color: var(--text-muted); margin-left: 6px; cursor: help; position: relative; vertical-align: middle; }
+  .info-icon svg { width: 12px; height: 12px; }
+  .info-icon:hover { color: var(--text-primary); }
+  .info-icon .tooltip { visibility: hidden; opacity: 0; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(4px); background: rgba(17, 21, 32, 0.98); color: #e8eaed; border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 500; white-space: nowrap; z-index: 100; transition: all 150ms ease; text-transform: none; letter-spacing: normal; pointer-events: none; text-align: center; line-height: 1.4; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  .info-icon:hover .tooltip { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(-6px); }
 </style>
