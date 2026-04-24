@@ -517,55 +517,79 @@
   {#if portfolioStats && optimizedStats}
     <div class="summary-row">
       <div class="summary-card current">
-        <div class="sc-badge">Current</div>
-        <div class="sc-value">{fmt(portfolioStats.totalValue)}</div>
+        <div class="sc-badge">Current Portfolio</div>
+        <div class="sc-starting">Starting: {fmt(portfolioStats.totalValue)}</div>
+        {#if currentProjection[5]}
+          <div class="sc-value">{fmt(portfolioStats.totalValue + currentProjection[5].total)}</div>
+          <div class="sc-value-label">5-Year Total Value</div>
+        {:else}
+          <div class="sc-value">{fmt(portfolioStats.totalValue)}</div>
+        {/if}
         <div class="sc-yields">
           {#if store.portfolioTarget === 'total' || store.portfolioTarget === 'rental'}
-            <div class="sc-yield"><span>Rental</span><span class="rental-c">{fmtPct(portfolioStats.avgRental)}</span></div>
+            <div class="sc-yield"><span>Rental</span><span>{fmtPct(portfolioStats.avgRental)}</span></div>
           {/if}
           {#if store.portfolioTarget === 'total' || store.portfolioTarget === 'app'}
-            <div class="sc-yield"><span>Appreciation</span><span class="app-c">{fmtPct(portfolioStats.avgApp)}</span></div>
+            <div class="sc-yield"><span>Appreciation</span><span>{fmtPct(portfolioStats.avgApp)}</span></div>
           {/if}
           {#if store.portfolioTarget === 'total'}
-            <div class="sc-yield total"><span>Total</span><span class="total-c">{fmtPct(portfolioStats.avgTotal)}</span></div>
+            <div class="sc-yield total"><span>Total</span><span class="sc-total-current">{fmtPct(portfolioStats.avgTotal)}</span></div>
           {/if}
         </div>
+        {#if riskData}
+          <div class="sc-risk-stats">
+            <div class="sc-risk-row"><span>Std Deviation</span><span>{riskData.aggMetrics.current.risk != null ? riskData.aggMetrics.current.risk.toFixed(2) + '%' : '—'}</span></div>
+            <div class="sc-risk-row"><span>Correlation</span><span>{(riskData.correlationData.current * 100).toFixed(1)}%</span></div>
+          </div>
+        {/if}
         {#if currentProjection[5]}
           <div class="sc-5yr">
             <div class="sc-5yr-row">
-              <span>5-Year Gain</span>
-              <strong>+{fmt(currentProjection[5].total)}</strong>
+              <span>Starting Portfolio</span>
+              <strong>{fmt(portfolioStats.totalValue)}</strong>
             </div>
             <div class="sc-5yr-row total">
-              <span>5-Year Total Value</span>
-              <strong>{fmt(portfolioStats.totalValue + currentProjection[5].total)}</strong>
+              <span>5-Year Gain</span>
+              <strong>+{fmt(currentProjection[5].total)}</strong>
             </div>
           </div>
         {/if}
       </div>
       <div class="summary-card optimized">
-        <div class="sc-badge opt">Optimized</div>
-        <div class="sc-value">{fmt(optimizedStats.totalValue)}</div>
+        <div class="sc-badge opt">Optimized Portfolio</div>
+        <div class="sc-starting">Starting: {fmt(optimizedStats.totalValue)}</div>
+        {#if optimizedProjection[5]}
+          <div class="sc-value">{fmt(optimizedStats.totalValue + optimizedProjection[5].total)}</div>
+          <div class="sc-value-label">5-Year Total Value</div>
+        {:else}
+          <div class="sc-value">{fmt(optimizedStats.totalValue)}</div>
+        {/if}
         <div class="sc-yields">
           {#if store.portfolioTarget === 'total' || store.portfolioTarget === 'rental'}
-            <div class="sc-yield"><span>Rental</span><span class="rental-c">{fmtPct(optimizedStats.avgRental)}</span></div>
+            <div class="sc-yield"><span>Rental</span><span>{fmtPct(optimizedStats.avgRental)}</span></div>
           {/if}
           {#if store.portfolioTarget === 'total' || store.portfolioTarget === 'app'}
-            <div class="sc-yield"><span>Appreciation</span><span class="app-c">{fmtPct(optimizedStats.avgApp)}</span></div>
+            <div class="sc-yield"><span>Appreciation</span><span>{fmtPct(optimizedStats.avgApp)}</span></div>
           {/if}
           {#if store.portfolioTarget === 'total'}
-            <div class="sc-yield total"><span>Total</span><span class="total-c">{fmtPct(optimizedStats.avgTotal)}</span></div>
+            <div class="sc-yield total"><span>Total</span><span class="sc-total-opt">{fmtPct(optimizedStats.avgTotal)}</span></div>
           {/if}
         </div>
+        {#if riskData}
+          <div class="sc-risk-stats">
+            <div class="sc-risk-row"><span>Std Deviation</span><span>{riskData.aggMetrics.optimal.risk != null ? riskData.aggMetrics.optimal.risk.toFixed(2) + '%' : '—'}</span></div>
+            <div class="sc-risk-row"><span>Correlation</span><span>{(riskData.correlationData.optimal * 100).toFixed(1)}%</span></div>
+          </div>
+        {/if}
         {#if optimizedProjection[5]}
           <div class="sc-5yr">
             <div class="sc-5yr-row">
-              <span>5-Year Gain</span>
-              <strong>+{fmt(optimizedProjection[5].total)}</strong>
+              <span>Starting Portfolio</span>
+              <strong>{fmt(optimizedStats.totalValue)}</strong>
             </div>
             <div class="sc-5yr-row total">
-              <span>5-Year Total Value</span>
-              <strong>{fmt(optimizedStats.totalValue + optimizedProjection[5].total)}</strong>
+              <span>5-Year Gain</span>
+              <strong>+{fmt(optimizedProjection[5].total)}</strong>
             </div>
           </div>
         {/if}
@@ -708,7 +732,7 @@
                   <td class="app-c">{fmtPct(item.yields.app)}</td>
                 {/if}
                 {#if store.portfolioTarget === 'total'}
-                  <td class="total-c bold">{fmtPct(item.yields.total)}</td>
+                  <td class="current-total-c bold">{fmtPct(item.yields.total)}</td>
                 {/if}
                 <td class="col-opt">
                   <div class="opt-selector" onclick={(e) => { e.stopPropagation(); activeOptDropdown = activeOptDropdown === i ? null : i; }}>
@@ -782,12 +806,19 @@
   .summary-card { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px 20px; }
   .summary-card.current { border-left: 3px solid rgba(108,92,231,0.6); }
   .summary-card.optimized { border-left: 3px solid rgba(0,184,148,0.6); }
-  .sc-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(108,92,231,1); margin-bottom: 4px; }
+  .sc-badge { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(108,92,231,1); margin-bottom: 6px; }
   .sc-badge.opt { color: rgba(0,184,148,1); }
-  .sc-value { font-size: var(--text-xl); font-weight: 700; color: var(--text-heading); }
+  .sc-value { font-size: 28px; font-weight: 800; color: var(--text-heading); letter-spacing: -0.02em; }
+  .sc-value-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+  .sc-starting { font-size: var(--text-xs); color: var(--text-muted); margin-bottom: 4px; }
   .sc-yields { margin-top: 10px; display: flex; flex-direction: column; gap: 3px; }
   .sc-yield { display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--text-secondary); }
   .sc-yield.total { font-weight: 600; padding-top: 3px; border-top: 1px solid var(--border-subtle); margin-top: 2px; }
+  .sc-total-current { color: rgba(108, 92, 231, 1); font-weight: 700; }
+  .sc-total-opt { color: rgba(0, 184, 148, 1); font-weight: 700; }
+  .sc-risk-stats { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 3px; }
+  .sc-risk-row { display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--text-muted); }
+  .sc-risk-row span:last-child { color: var(--text-secondary); font-weight: 500; }
   .sc-5yr { margin-top: 16px; padding: 12px 14px; background: rgba(0, 0, 0, 0.2); border-radius: var(--radius-md); border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; gap: 8px; }
   .sc-5yr-row { display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); color: var(--text-secondary); }
   .sc-5yr-row strong { color: var(--text-primary); font-weight: 600; font-size: var(--text-sm); }
@@ -798,6 +829,7 @@
   .rental-c { color: var(--rental-color); }
   .app-c { color: var(--appreciation-color); }
   .total-c { color: var(--yield-high); }
+  .current-total-c { color: rgba(108, 92, 231, 1); }
   .bold { font-weight: 600; }
 
   /* Optimization Settings box */
@@ -835,6 +867,7 @@
   .portfolio-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); background: var(--bg-secondary); border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle); }
   .portfolio-table th { text-align: left; padding: 10px 12px; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border-subtle); background: var(--bg-tertiary); }
   .portfolio-table td { padding: 10px 12px; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.03); font-size: var(--text-sm); vertical-align: middle; }
+  .portfolio-table td.current-total-c { color: rgba(108, 92, 231, 1); }
   .portfolio-table tbody tr:hover { background: var(--bg-hover); }
 
   .col-name { min-width: 140px; }
