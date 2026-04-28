@@ -1,7 +1,9 @@
 <script>
   import { onMount } from 'svelte';
   import { store } from './lib/stores/appState.svelte.js';
-  import { loadData } from './lib/data/dataLoader.js';
+  import { loadData, loadLocationHierarchy } from './lib/data/dataLoader.js';
+  import LandingPage from './lib/components/LandingPage.svelte';
+  import ToolSwitcher from './lib/components/ToolSwitcher.svelte';
   import ModeSelector from './lib/components/ModeSelector.svelte';
   import FilterBar from './lib/components/FilterBar.svelte';
   import MapView from './lib/components/MapView.svelte';
@@ -17,7 +19,12 @@
   onMount(async () => {
     try {
       store.dataLoading = true;
-      store.appData = await loadData();
+      const [appData, hierarchy] = await Promise.all([
+        loadData(),
+        loadLocationHierarchy(),
+      ]);
+      store.appData = appData;
+      store.locationHierarchy = hierarchy;
       store.dataLoading = false;
     } catch (err) {
       store.dataError = err.message;
@@ -31,66 +38,72 @@
   }
 </script>
 
-<div class="app-layout" id="app-layout">
-  <header class="topbar" id="topbar">
-    <div class="topbar-left">
-      <div class="logo" id="logo">
-        <span class="logo-text">Yield<span class="logo-accent">Arbitrage</span></span>
+{#if !store.activeTool}
+  <!-- Landing Page -->
+  <LandingPage />
+{:else}
+  <!-- Tool View -->
+  <div class="app-layout" id="app-layout">
+    <header class="topbar" id="topbar">
+      <div class="topbar-left">
+        <button class="logo" id="logo" onclick={() => store.activeTool = null} title="Back to all tools">
+          <span class="logo-text">Yield<span class="logo-accent">Arbitrage</span></span>
+        </button>
+        <ModeSelector />
       </div>
-      <ModeSelector />
-    </div>
-    <FilterBar />
-    <div class="topbar-right">
-      <button class="guide-btn" onclick={() => showGuide = true}>User Guide</button>
-    </div>
-  </header>
-
-  <main class="main-content" class:panel-open={store.panelOpen && store.mode !== 'portfolio'}>
-    {#if store.mode === 'portfolio'}
-      <PortfolioPanel />
-    {:else}
-      <div class="map-area">
-        {#if store.dataLoading}
-          <div class="loading-overlay" id="loading-overlay">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Loading metro data...</div>
-          </div>
-        {:else if store.dataError}
-          <div class="error-overlay" id="error-overlay">
-            <div class="error-icon">⚠️</div>
-            <div class="error-text">Failed to load data</div>
-            <div class="error-detail">{store.dataError}</div>
-          </div>
-        {:else}
-          <MapView bind:this={mapView} />
-        {/if}
+      <FilterBar />
+      <div class="topbar-right">
+        <ToolSwitcher />
       </div>
+    </header>
 
-      {#if store.panelOpen}
-        <aside class="side-panel" id="side-panel">
-          {#if store.mode === 'explore'}
-            <ExplorePanel />
+    <main class="main-content" class:panel-open={store.panelOpen && store.mode !== 'portfolio'}>
+      {#if store.mode === 'portfolio'}
+        <PortfolioPanel />
+      {:else}
+        <div class="map-area">
+          {#if store.dataLoading}
+            <div class="loading-overlay" id="loading-overlay">
+              <div class="loading-spinner"></div>
+              <div class="loading-text">Loading metro data...</div>
+            </div>
+          {:else if store.dataError}
+            <div class="error-overlay" id="error-overlay">
+              <div class="error-icon">⚠️</div>
+              <div class="error-text">Failed to load data</div>
+              <div class="error-detail">{store.dataError}</div>
+            </div>
           {:else}
-            <OptimizePanel onHighlightMetro={handleHighlightMetro} />
+            <MapView bind:this={mapView} onShowGuide={() => showGuide = true} />
           {/if}
-        </aside>
+        </div>
+
+        {#if store.panelOpen}
+          <aside class="side-panel" id="side-panel">
+            {#if store.mode === 'explore'}
+              <ExplorePanel />
+            {:else}
+              <OptimizePanel onHighlightMetro={handleHighlightMetro} />
+            {/if}
+          </aside>
+        {/if}
       {/if}
-    {/if}
-  </main>
-</div>
+    </main>
+  </div>
 
-{#if store.dealMetro && store.optimizeBaseline}
-  <DealModal
-    startMetro={store.optimizeBaseline}
-    endMetro={store.dealMetro}
-    startPropertyType={store.propertyType}
-    endPropertyType={store.optimizeEndPropertyType}
-    onClose={() => store.dealMetro = null}
-  />
-{/if}
+  {#if store.dealMetro && store.optimizeBaseline}
+    <DealModal
+      startMetro={store.optimizeBaseline}
+      endMetro={store.dealMetro}
+      startPropertyType={store.propertyType}
+      endPropertyType={store.optimizeEndPropertyType}
+      onClose={() => store.dealMetro = null}
+    />
+  {/if}
 
-{#if showGuide}
-  <UserGuideModal onClose={() => showGuide = false} />
+  {#if showGuide}
+    <UserGuideModal onClose={() => showGuide = false} />
+  {/if}
 {/if}
 
 <style>
@@ -118,6 +131,7 @@
     margin-left: auto;
     display: flex;
     align-items: center;
+    gap: var(--space-3);
   }
 
   .guide-btn {
@@ -148,7 +162,18 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    cursor: default;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: var(--radius-sm);
+    transition: background 150ms ease;
+    font-family: var(--font-sans);
+  }
+
+  .logo:hover {
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .logo-icon { font-size: 20px; }

@@ -1,6 +1,6 @@
 <script>
   import { store } from '../stores/appState.svelte.js';
-  import { getYieldValue, formatYield } from '../data/dataLoader.js';
+  import { getYieldValue, formatYield, getFilteredStates } from '../data/dataLoader.js';
 
   let { onHighlightMetro = () => {} } = $props();
 
@@ -24,8 +24,15 @@
     const bYield = getYieldValue(baseline, startPt, effectiveYieldType);
     if (bYield == null) return [];
 
+    const allowedStates = getFilteredStates(
+      store.locationHierarchy,
+      store.endRegionFilter,
+      store.endStateFilter
+    );
+
     return store.appData.metros
       .filter(m => m.regionId !== baseline.regionId)
+      .filter(m => !allowedStates || allowedStates.has(m.stateName))
       .map(m => {
         const metroYield = getYieldValue(m, endPt, effectiveYieldType);
         return {

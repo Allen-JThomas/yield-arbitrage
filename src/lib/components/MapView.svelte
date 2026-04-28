@@ -3,7 +3,9 @@
   import L from 'leaflet';
   import 'leaflet/dist/leaflet.css';
   import { store } from '../stores/appState.svelte.js';
-  import { getYieldValue, yieldToColor, formatYield } from '../data/dataLoader.js';
+  import { getYieldValue, yieldToColor, formatYield, getFilteredStates } from '../data/dataLoader.js';
+
+  let { onShowGuide } = $props();
 
   let mapContainer;
   let map;
@@ -63,7 +65,22 @@
     markersLayer.clearLayers();
     markerMap = {};
 
-    const metros = store.appData.metros;
+    // In optimize mode, use END location filters for destination scoping
+    // In explore/portfolio, use the standard start location filters
+    const isOpt = store.mode === 'optimize';
+    const regionF = isOpt ? store.endRegionFilter : store.selectedRegionFilter;
+    const stateF = isOpt ? store.endStateFilter : store.selectedStateFilter;
+
+    const allowedStates = getFilteredStates(
+      store.locationHierarchy,
+      regionF,
+      stateF
+    );
+
+    const allMetros = store.appData.metros;
+    const metros = allowedStates
+      ? allMetros.filter(m => allowedStates.has(m.stateName))
+      : allMetros;
     const pt = store.propertyType;
     const yt = store.yieldType;
 
@@ -142,6 +159,11 @@
     store.yieldType;
     store.appData;
     store.optimizeBaseline;
+    store.selectedRegionFilter;
+    store.selectedStateFilter;
+    store.endRegionFilter;
+    store.endStateFilter;
+    store.mode;
     updateMarkers();
   });
 
@@ -226,46 +248,52 @@
       </div>
     </div>
 
-    <!-- Methodology panel -->
-    <div class="methodology-container" id="methodology">
-      <button
-        class="methodology-toggle"
-        onclick={() => methodologyOpen = !methodologyOpen}
-      >
-        <span class="methodology-icon">📐</span>
-        <span>Methodology</span>
-        <span class="methodology-chevron" class:open={methodologyOpen}>▸</span>
-      </button>
+    <!-- Bottom-left controls -->
+    <div class="bottom-left-controls" id="bottom-left-controls">
+      <div class="methodology-container" id="methodology">
+        <button
+          class="methodology-toggle"
+          onclick={() => methodologyOpen = !methodologyOpen}
+        >
+          <span class="methodology-icon">📐</span>
+          <span>Methodology</span>
+          <span class="methodology-chevron" class:open={methodologyOpen}>▸</span>
+        </button>
 
-      {#if methodologyOpen}
-        <div class="methodology-body">
-          <div class="method-item">
-            <div class="method-name">Rental Yield</div>
-            <div class="method-formula">(Monthly Rent × 12) ÷ Asset Value × 100</div>
-            <div class="method-desc">Annualized gross rental income as a percentage of current asset value.</div>
-          </div>
+        {#if methodologyOpen}
+          <div class="methodology-body">
+            <div class="method-item">
+              <div class="method-name">Rental Yield</div>
+              <div class="method-formula">(Monthly Rent × 12) ÷ Asset Value × 100</div>
+              <div class="method-desc">Annualized gross rental income as a percentage of current asset value.</div>
+            </div>
 
-          <div class="method-item">
-            <div class="method-name">Appreciation Yield</div>
-            <div class="method-formula">(Asset Value − Asset Value 12mo ago) ÷ Asset Value 12mo ago × 100</div>
-            <div class="method-desc">Year-over-year percentage change in asset value. Only available for Single Family.</div>
-          </div>
+            <div class="method-item">
+              <div class="method-name">Appreciation Yield</div>
+              <div class="method-formula">(Asset Value − Asset Value 12mo ago) ÷ Asset Value 12mo ago × 100</div>
+              <div class="method-desc">Year-over-year percentage change in asset value. Only available for Single Family.</div>
+            </div>
 
-          <div class="method-item">
-            <div class="method-name">Total Yield</div>
-            <div class="method-formula">Rental Yield + Appreciation Yield</div>
-            <div class="method-desc">Combined return from rental income and property value growth.</div>
-          </div>
+            <div class="method-item">
+              <div class="method-name">Total Yield</div>
+              <div class="method-formula">Rental Yield + Appreciation Yield</div>
+              <div class="method-desc">Combined return from rental income and property value growth.</div>
+            </div>
 
-          <div class="method-divider"></div>
+            <div class="method-divider"></div>
 
-          <div class="method-source">
-            <strong>Data</strong>: Zillow ZORI (rent) &amp; ZHVI (value), monthly, metro-level (MSA).
+            <div class="method-source">
+              <strong>Data</strong>: Zillow ZORI (rent) &amp; ZHVI (value), monthly, metro-level (MSA).
+            </div>
+            <div class="method-source">
+              <strong>Coverage</strong>: ~900 US metros, 2015–present.
+            </div>
           </div>
-          <div class="method-source">
-            <strong>Coverage</strong>: ~900 US metros, 2015–present.
-          </div>
-        </div>
+        {/if}
+      </div>
+
+      {#if onShowGuide}
+        <button class="guide-btn-map" onclick={onShowGuide}>User Guide</button>
       {/if}
     </div>
   {/if}
@@ -363,14 +391,42 @@
     flex-shrink: 0;
   }
 
-  /* --- Methodology --- */
+  /* --- Bottom-left controls --- */
 
-  .methodology-container {
+  .bottom-left-controls {
     position: absolute;
     bottom: 32px;
     left: 16px;
     z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .methodology-container {
     max-width: 340px;
+  }
+
+  .guide-btn-map {
+    padding: 8px 14px;
+    background: rgba(17, 21, 32, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms ease;
+    white-space: nowrap;
+  }
+
+  .guide-btn-map:hover {
+    background: rgba(17, 21, 32, 0.95);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.15);
   }
 
   .methodology-toggle {

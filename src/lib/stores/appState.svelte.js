@@ -20,8 +20,21 @@ function createAppState() {
   let hoveredMetro = $state(null);
   let dealMetro = $state(null);
   let portfolioTarget = $state('total');
+  let locationGranularity = $state('country');
+  let selectedRegionFilter = $state(null);
+  let selectedStateFilter = $state(null);
+  let locationHierarchy = $state(null);
+  // Optimize mode: direction toggle + ending location scope
+  let locationDirection = $state('start');
+  let endLocationGranularity = $state('country');
+  let endRegionFilter = $state(null);
+  let endStateFilter = $state(null);
+  let activeTool = $state(null); // null = landing page
 
   return {
+    get activeTool() { return activeTool; },
+    set activeTool(v) { activeTool = v; },
+
     get mode() { return mode; },
     set mode(v) { mode = v; },
 
@@ -70,6 +83,30 @@ function createAppState() {
     get portfolioTarget() { return portfolioTarget; },
     set portfolioTarget(v) { portfolioTarget = v; },
 
+    get locationGranularity() { return locationGranularity; },
+    set locationGranularity(v) { locationGranularity = v; },
+
+    get selectedRegionFilter() { return selectedRegionFilter; },
+    set selectedRegionFilter(v) { selectedRegionFilter = v; },
+
+    get selectedStateFilter() { return selectedStateFilter; },
+    set selectedStateFilter(v) { selectedStateFilter = v; },
+
+    get locationHierarchy() { return locationHierarchy; },
+    set locationHierarchy(v) { locationHierarchy = v; },
+
+    get locationDirection() { return locationDirection; },
+    set locationDirection(v) { locationDirection = v; },
+
+    get endLocationGranularity() { return endLocationGranularity; },
+    set endLocationGranularity(v) { endLocationGranularity = v; },
+
+    get endRegionFilter() { return endRegionFilter; },
+    set endRegionFilter(v) { endRegionFilter = v; },
+
+    get endStateFilter() { return endStateFilter; },
+    set endStateFilter(v) { endStateFilter = v; },
+
     // --- Actions ---
     selectRegion(metro) {
       selectedRegion = metro;
@@ -90,6 +127,27 @@ function createAppState() {
       selectedRegion = null;
       optimizeBaseline = null;
       optimizeReady = false;
+    },
+
+    setLocationGranularity(level) {
+      locationGranularity = level;
+      // Clear sub-filters when changing granularity
+      if (level === 'country') {
+        selectedRegionFilter = null;
+        selectedStateFilter = null;
+      } else if (level === 'region') {
+        selectedStateFilter = null;
+      }
+    },
+
+    setEndLocationGranularity(level) {
+      endLocationGranularity = level;
+      if (level === 'country') {
+        endRegionFilter = null;
+        endStateFilter = null;
+      } else if (level === 'region') {
+        endStateFilter = null;
+      }
     },
 
     setOptimizeBaseline(metro) {

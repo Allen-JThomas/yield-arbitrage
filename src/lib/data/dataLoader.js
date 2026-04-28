@@ -3,6 +3,7 @@
  */
 
 let cachedData = null;
+let cachedHierarchy = null;
 
 export async function loadData() {
   if (cachedData) return cachedData;
@@ -12,6 +13,41 @@ export async function loadData() {
 
   cachedData = await resp.json();
   return cachedData;
+}
+
+/**
+ * Load the location hierarchy (countries, regions, states).
+ */
+export async function loadLocationHierarchy() {
+  if (cachedHierarchy) return cachedHierarchy;
+
+  const resp = await fetch('/data/locationHierarchy.json');
+  if (!resp.ok) throw new Error(`Failed to load location hierarchy: ${resp.status}`);
+
+  cachedHierarchy = await resp.json();
+  return cachedHierarchy;
+}
+
+/**
+ * Given the hierarchy and current filter selections, return the set of state
+ * abbreviations that should be shown. Returns null if no filtering is active
+ * (i.e. show everything).
+ */
+export function getFilteredStates(hierarchy, regionFilter, stateFilter) {
+  if (!hierarchy) return null;
+
+  // State filter is most specific — if set, only that state
+  if (stateFilter) {
+    return new Set([stateFilter]);
+  }
+
+  // Region filter — return all states in that region
+  if (regionFilter && hierarchy.US?.regions?.[regionFilter]) {
+    return new Set(hierarchy.US.regions[regionFilter].states);
+  }
+
+  // No filter active
+  return null;
 }
 
 /**
